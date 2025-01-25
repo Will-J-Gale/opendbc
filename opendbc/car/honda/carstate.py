@@ -44,11 +44,6 @@ def get_can_messages(CP, gearbox_msg):
       ("SCM_BUTTONS", 25),
     ]
 
-  if CP.carFingerprint in (CAR.HONDA_CRV_HYBRID, CAR.HONDA_CIVIC_BOSCH_DIESEL, CAR.ACURA_RDX_3G, CAR.HONDA_E):
-    messages.append((gearbox_msg, 50))
-  else:
-    messages.append((gearbox_msg, 100))
-
   if CP.flags & HondaFlags.BOSCH_ALT_BRAKE:
     messages.append(("BRAKE_MODULE", 50))
 
@@ -97,7 +92,6 @@ class CarState(CarStateBase):
     if CP.carFingerprint in HONDA_NIDEC_ALT_SCM_MESSAGES:
       self.main_on_sig_msg = "SCM_BUTTONS"
 
-    self.shifter_values = can_define.dv[self.gearbox_msg]["GEAR_SHIFTER"]
     self.steer_status_values = defaultdict(lambda: "UNKNOWN", can_define.dv["STEER_STATUS"]["STEER_STATUS"])
 
     self.brake_switch_prev = False
@@ -194,8 +188,7 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint in (HONDA_BOSCH | {CAR.HONDA_CIVIC, CAR.HONDA_ODYSSEY, CAR.HONDA_ODYSSEY_CHN}):
       ret.parkingBrake = cp.vl["EPB_STATUS"]["EPB_STATE"] != 0
 
-    gear = int(cp.vl[self.gearbox_msg]["GEAR_SHIFTER"])
-    ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(gear, None))
+    ret.gearShifter = self.parse_gear_shifter("D")
 
     ret.gas = cp.vl["POWERTRAIN_DATA"]["PEDAL_GAS"]
     ret.gasPressed = ret.gas > 1e-5
